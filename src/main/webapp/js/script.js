@@ -59,3 +59,14 @@ function uploadFile(){
         console.log(data);
     });
 }
+
+function consultarRespuesta(){
+	$.ajax({
+        type: 'GET',
+        url: 'ControladorServlet',
+        processData: false,
+        contentType: false
+    }).done(function(data) {
+        console.log(data);
+    });
+}

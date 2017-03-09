@@ -36,13 +36,14 @@
     </div>
     
     <button  class="btn btn-default" id='cargar' type="button" onclick="uploadFile();">Cargar Archivo</button>
+    <button  class="btn btn-default" id='cargar' type="button" onclick="consultarRespuesta();">Consultar Respuesta</button>
     
     <div>
       <ul  class="list-unstyled" id='ul'></ul>
     </div>
     <script src="js/jquery-2.2.0.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
-    <script src="scriptCapturaAudio.js"></script>
+    <script src="js/script.js"></script>
     <script src="js/MediaStreamRecorder.min.js"></script>
     <script src="js/gumadapter.js"></script>
   </body>

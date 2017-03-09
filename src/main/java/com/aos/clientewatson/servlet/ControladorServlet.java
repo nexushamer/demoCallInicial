@@ -5,6 +5,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -13,6 +15,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
+
+import com.aos.clientewatson.modelos.Response;
+import com.google.gson.Gson;
+import com.ibm.watson.developer_cloud.http.HttpMediaType;
+import com.ibm.watson.developer_cloud.speech_to_text.v1.SpeechToText;
+import com.ibm.watson.developer_cloud.speech_to_text.v1.model.RecognizeOptions;
+import com.ibm.watson.developer_cloud.speech_to_text.v1.model.SpeechResults;
+import com.ibm.watson.developer_cloud.speech_to_text.v1.websocket.BaseRecognizeCallback;
 
 /**
  * Servlet implementation class ControladorServlet
@@ -23,7 +33,9 @@ import javax.servlet.http.Part;
 				maxRequestSize=1024*1024*100)
 public class ControladorServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
+	private static CountDownLatch lock = new CountDownLatch(1);   
+	private static String resultado;
+	
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -37,13 +49,34 @@ public class ControladorServlet extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException 
 	{
+		response.setContentType( "application/json");
+		Gson gson = new Gson();
+		Response resp = new Response();
+		if(resultado.equals(""))
+			resp.setMensaje("No ha termnado la traduccion");
+		else
+			resp.setMensaje(resultado);
+		
+		System.out.println("finalizando para escribir la respuesta del get");
+		
+		response.getWriter( ).println( gson.toJson( resp));
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException 
+	{
 		Part partArchivo = request.getPart("userfile");
+		
+		InputStream is = null;
 		
 		for (Part part : request.getParts()) 
 		{
 			//if(!part.getName().equals("") && part.getName().equals("userfile"))
 			//{
-				InputStream is = part.getInputStream();
+				is = part.getInputStream();
+				/*
 				byte[] buffer = new byte[is.available()];
 				is.read(buffer);
 			 
@@ -53,16 +86,43 @@ public class ControladorServlet extends HttpServlet {
 			    
 			    if(outStream != null)
 			    	outStream.close();
+			    */
 			//}
         }
-	}
-
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException 
-	{
-		doGet(request, response);
+		
+		System.out.println("antes de llamar a la api sppect to text");
+		SpeechToText service = new SpeechToText();
+		System.out.println("colocando el usuario y el password");
+	    service.setUsernameAndPassword("290ee3c4-358a-42b2-91d5-c330431cda85", "dZjzQlJCMWrQ");
+	    
+	    RecognizeOptions options = new RecognizeOptions.Builder().continuous(true).interimResults(true)
+	            .contentType(HttpMediaType.AUDIO_WAV).build();
+	    System.out.println("despues de crear las opciones");
+	    
+	    service.recognizeUsingWebSocket(is, options, new BaseRecognizeCallback() {
+	      @Override
+	      public void onTranscription(SpeechResults speechResults) 
+	      {
+	    	  System.out.println("transcripcio termino");
+	    	  System.out.println(speechResults);
+	    	  resultado = speechResults.toString();
+	      }
+	
+	      @Override
+	      public void onDisconnected() {
+	        lock.countDown();
+	      }
+	    });
+	    
+	    try 
+	    {
+			lock.await(1, TimeUnit.MINUTES);
+		} 
+	    catch (InterruptedException e) 
+	    {
+			e.printStackTrace();
+		}
+	    System.out.println("esperando a que el servicio termine");
 	}
 
 }
