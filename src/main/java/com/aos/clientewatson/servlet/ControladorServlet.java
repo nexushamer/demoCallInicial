@@ -97,9 +97,13 @@ public class ControladorServlet extends HttpServlet {
 		SpeechToText service = new SpeechToText();
 		System.out.println("colocando el usuario y el password");
 	    service.setUsernameAndPassword("290ee3c4-358a-42b2-91d5-c330431cda85", "dZjzQlJCMWrQ");
-	    
+	    /*
 	    RecognizeOptions options = new RecognizeOptions.Builder().continuous(true).interimResults(true)
 	            .contentType(HttpMediaType.AUDIO_WAV).model("es-ES_BroadbandModel").build();
+	    */
+	    RecognizeOptions options = new RecognizeOptions.Builder().continuous(true).interimResults(true)
+	            .contentType(HttpMediaType.AUDIO_WAV).model("es-ES_NarrowbandModel").build();
+	    
 	    System.out.println("despues de crear las opciones");
 	    
 	    service.recognizeUsingWebSocket(is, options, new BaseRecognizeCallback() {
