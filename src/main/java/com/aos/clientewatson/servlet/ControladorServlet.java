@@ -99,7 +99,7 @@ public class ControladorServlet extends HttpServlet {
 	    service.setUsernameAndPassword("290ee3c4-358a-42b2-91d5-c330431cda85", "dZjzQlJCMWrQ");
 	    
 	    RecognizeOptions options = new RecognizeOptions.Builder().continuous(true).interimResults(true)
-	            .contentType(HttpMediaType.AUDIO_WAV).build();
+	            .contentType(HttpMediaType.AUDIO_WAV).model("es-ES_BroadbandModel").build();
 	    System.out.println("despues de crear las opciones");
 	    
 	    service.recognizeUsingWebSocket(is, options, new BaseRecognizeCallback() {
@@ -123,7 +123,7 @@ public class ControladorServlet extends HttpServlet {
 		} 
 	    catch (InterruptedException e) 
 	    {
-			e.printStackTrace();
+	    	System.out.println("hubo una interrupcion del servicio " + e.getMessage());
 		}
 	    System.out.println("esperando a que el servicio termine");
 	}
