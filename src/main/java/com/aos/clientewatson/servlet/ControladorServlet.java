@@ -49,16 +49,19 @@ public class ControladorServlet extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException 
 	{
+		System.out.println("antes de colocar el content type");
 		response.setContentType( "application/json");
+		System.out.println("gson");
 		Gson gson = new Gson();
+		System.out.println("Response");
 		Response resp = new Response();
+		System.out.println("resultado.equals()");
 		if(resultado.equals(""))
 			resp.setMensaje("No ha termnado la traduccion");
 		else
 			resp.setMensaje(resultado);
 		
 		System.out.println("finalizando para escribir la respuesta del get");
-		
 		response.getWriter( ).println( gson.toJson( resp));
 	}
 
